@@ -1,3 +1,13 @@
+/**
+* @file test_signal_generator.cpp
+* @brief This file creates an unit test for checking the main functionalities of the 
+* SignalGeneratorComponent and the DigitalConverteComponent
+*
+* @author Murilo Mendonça Venâncio
+* 
+* @date 24/01/2019
+*/
+
 #include <hyro/SignalGeneratorComponent.hpp>
 #include <hyro/DigitalConverterComponent.hpp>
 #include <hyro/utils/DynamicPropertyAccess.h>
@@ -31,7 +41,7 @@ namespace test
 
 TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
 {
-  //Configuration
+  /** Configuration */
   auto signal_config     = "{"
                             "outputs: {"
                             "signals: { protocol: 'api' },"
@@ -39,9 +49,10 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
                             "}"
                             "}";
 
-  //IntGeneratorComponent state machine
+  
   StateMachine sig_sm(std::make_shared<SignalGeneratorComponent>("/signal_generator"_uri));
 
+  /** It checks all the connection procedure for the SignalGeneratorComponent state machine */
   auto result = sig_sm.init(ComponentConfiguration(signal_config));
   ASSERT_EQ(Result::RESULT_OK, result);
 
@@ -55,7 +66,7 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
   ASSERT_EQ(Result::RESULT_OK, result);
 
   
-  //Fake input channels
+  /** Fake input channels tests */
   auto inputSignal = std::make_shared<FakeInput<Signal>>("inputSignal"_uri, "api", "/signal_generator/signals");
   ASSERT_TRUE(inputSignal->connect());
 
@@ -65,7 +76,7 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
   ASSERT_EQ(ReceiveStatus::RECEIVE_OK, ret);
   EXPECT_EQ(valueSignal->value, 0);
 
-  //Dynamic properties
+  /** Dynamic properties tests */
   DynamicPropertyAccess dynamic_property_access("/signal_generator"_uri);
   float not_exits;
   ASSERT_ANY_THROW(dynamic_property_access.get("not_exists", not_exits));
@@ -86,7 +97,7 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
 
 TEST (TestSignalGenerator, DigitalConverterComponentCheck)
 {
-  //Configuration
+  /** Configuration */
   auto digital_config  = "{"
                           "inputs: {"
                           "signals: {protocol: 'api'}},"
@@ -95,22 +106,23 @@ TEST (TestSignalGenerator, DigitalConverterComponentCheck)
                           "fix_dynamic: { protocol: 'api' }"
                           "}"
                           "}";
-  //IntGeneratorComponent state machine
   StateMachine dig_sm(std::make_shared<DigitalConverterComponent>("/digital_converter"_uri));
 
-  // Fake outputs channels
+  /** Fake outputs channels tests*/
   auto outputSignal = std::make_shared<FakeOutput<Signal>>("outputSignal"_uri, "api");
   ASSERT_TRUE(outputSignal->start());
 
   auto configuration = ComponentConfiguration(digital_config);
   auto endpoint = ConnectionConfiguration("{ signals: { endpoint: 'outputSignal' } }");
+
+  /** It checks all the connection procedure for the DigitalConverterComponent state machine */
   ASSERT_AND_RUN_STATE_MACHINE(dig_sm, configuration, endpoint);
 
-  //Fake input channels
+  /**Fake input channels tests*/
   auto inputSignal = std::make_shared<FakeInput<Signal>>("inputSignal"_uri, "api", "/digital_converter/digital_signals");
   ASSERT_TRUE(inputSignal->connect());
 
-  //Dynamic properties
+  /** Dynamic properties  tests*/
   DynamicPropertyAccess dynamic_property_access("/digital_converter"_uri);
   float not_exits;
   ASSERT_ANY_THROW(dynamic_property_access.get("not_exists", not_exits));

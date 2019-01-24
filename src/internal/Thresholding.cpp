@@ -1,9 +1,17 @@
+/**
+* @file Thresholding.cpp
+* @brief This header file contains the implementation functions of the Thresholding class.
+*
+* @author Murilo Mendonça Venâncio
+* 
+* @date 24/01/2019
+*/
+
 #include "Thresholding.hpp"
-
-
 
 Thresholding::Thresholding()
 {
+
 }
 
 

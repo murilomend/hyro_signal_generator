@@ -1,3 +1,14 @@
+/**
+* @file DigitalConverterComponent.hpp
+* @brief This header file contains the basic definitions for the DigitalConverterComponent class.
+* It creates a Hyro component to be used as an virtual threshold function for a given signal
+*
+* @author Murilo Mendonça Venâncio
+* 
+* @date 24/01/2019
+*/
+
+
 #pragma once
 
 #ifndef SIGNAL_GENERATOR_DIGITALCONVERTERCOMPONENT_H
@@ -17,32 +28,47 @@ class SIGNAL_GENERATOR_COMPONENTS_EXPORT DigitalConverterComponent : public hyro
 {
 public:
 
+  /**
+   * @brief Construct a new DigitalConverterComponent object
+   * 
+   * @param uri 
+   */
   DigitalConverterComponent(URI uri);
 
-  // Other public constructors here
 
+  /**
+   * @brief Destroy the DigitalConverterComponent object
+   * 
+   */
   virtual  ~DigitalConverterComponent () override = default;
 
+
+  /**
+   * @brief Methods related to the overall functionalities if the component
+   * 
+   * @param uri 
+   */
+  ///@{
   virtual hyro::Result init (const hyro::ComponentConfiguration & config) override;
-
   virtual hyro::Result reset () override;
-
   virtual hyro::Result check () override;
-
   virtual hyro::Result start () override;
-
   virtual hyro::Result update () override;
-
-  // Other public methods here
+  ///@}
 
 private:
 
-  // Other private methods here
+  /*
+  * Methods related to Set and Get ot each registered dynamic property
+  */ 
+  ///@{
   bool   setAmplitude(double amplitude);
   double getAmplitude();
   bool   setThreshold(double threshold);
   double getThreshold();
-  // Other variables here
+  ///@}
+  
+  
   Thresholding  m_thresh;
   double        m_amplitude;
   double        m_threshold;
