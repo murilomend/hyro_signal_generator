@@ -8,8 +8,6 @@
 * 
 * @date 24/01/2019
 */
-
-
 #ifndef THRESHOLDING_HPP
 #define THRESHOLDING_HPP
 
@@ -23,24 +21,25 @@ public:
    * @brief Construct a new Thresholding object
    * 
    */
-  Thresholding();
-
+  Thresholding()
+    : m_amp(1)
+    , m_thresh(0) {}
 
   /**
    * @brief Construct a new Thresholding object
    * 
-   * @param amplitude 
-   * @param threshold 
+   * @param amp 
+   * @param thresh 
    */
-  Thresholding(const double &amplitude,const double &threshold);
-
-
+  Thresholding(const double amp,const double thresh)
+    : m_amp(amp)
+    , m_thresh(thresh) {}
+    
   /**
    * @brief Destroy the Thresholding object
    * 
    */
   ~Thresholding();
-
 
   /**
    * @brief Get a signal as input and calculates its threshold
@@ -48,22 +47,21 @@ public:
    * @param signal  signal to be thresholded
    * @return double  signal thresholded
    */
-  double getSignalThreshold(const double &signal);
-
+  double getSignalThreshold(const double signal);
 
   /**
-   * @brief Set the Threshold object
-   * 
-   * @param amplitude   maximum wave peak
-   * @param threshold   the value where the original signal starts to be thresholded
-   * @return true       if they are acceptable parameters
-   * @return false      otherwise
-   */
-  bool   setThreshold(const double &amplitude,const double &threshold);
-private:
-  double m_amplitude;
-  double m_threshold;   
+  * Methods related to Set and Get the private parameters
+  */ 
+  ///@{
+  bool   setThreshold(const double thresh);
+  double getThreshold();
+  bool   setAmplitude(const double amp);
+  double getAmplitude();
+  ///@}
 
+private:
+  double m_amp;
+  double m_thresh;   
 };
 
 #endif // THRESHOLDING_HPP

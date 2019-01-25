@@ -7,7 +7,6 @@
 * 
 * @date 24/01/2019
 */
-
 #include <hyro/SignalGeneratorComponent.hpp>
 #include <hyro/DigitalConverterComponent.hpp>
 #include <hyro/utils/DynamicPropertyAccess.h>
@@ -21,18 +20,13 @@ __assert_and_run_state_machine(hyro::StateMachine& sm,
                                const hyro::ConnectionConfiguration& endpoint)
 {
   ASSERT_EQ(hyro::Result::RESULT_OK, sm.init(conf));
-
   ASSERT_EQ(hyro::Result::RESULT_OK, sm.start());
-
   ASSERT_EQ(hyro::Result::RESULT_OK, sm.connect(endpoint));
-
   ASSERT_EQ(hyro::Result::RESULT_OK, sm.check());
 }
 
 #define ASSERT_AND_RUN_STATE_MACHINE(sm, conf, endpoint) \
   __assert_and_run_state_machine(sm, conf, endpoint)
-
-
 
 namespace hyro
 {
@@ -41,7 +35,7 @@ namespace test
 
 TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
 {
-  /** Configuration */
+  // Configuration 
   auto signal_config     = "{"
                             "outputs: {"
                             "signals: { protocol: 'api' },"
@@ -52,7 +46,7 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
   
   StateMachine sig_sm(std::make_shared<SignalGeneratorComponent>("/signal_generator"_uri));
 
-  /** It checks all the connection procedure for the SignalGeneratorComponent state machine */
+  // It checks all the connection procedure for the SignalGeneratorComponent state machine 
   auto result = sig_sm.init(ComponentConfiguration(signal_config));
   ASSERT_EQ(Result::RESULT_OK, result);
 
@@ -66,17 +60,17 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
   ASSERT_EQ(Result::RESULT_OK, result);
 
   
-  /** Fake input channels tests */
-  auto inputSignal = std::make_shared<FakeInput<Signal>>("inputSignal"_uri, "api", "/signal_generator/signals");
-  ASSERT_TRUE(inputSignal->connect());
+  // Fake input channels tests 
+  auto input_signal = std::make_shared<FakeInput<Signal>>("inputSignal"_uri, "api", "/signal_generator/signals");
+  ASSERT_TRUE(input_signal->connect());
 
   sig_sm.update();
-  auto valueSignal = std::shared_ptr<const Signal>();
-  ReceiveStatus ret = inputSignal->receive(valueSignal, 500ms);
+  auto value_signal = std::shared_ptr<const Signal>();
+  ReceiveStatus ret = input_signal->receive(value_signal, 500ms);
   ASSERT_EQ(ReceiveStatus::RECEIVE_OK, ret);
-  EXPECT_EQ(valueSignal->value, 0);
+  EXPECT_NEAR(value_signal->value, 0., 0.001);
 
-  /** Dynamic properties tests */
+  // Dynamic properties tests 
   DynamicPropertyAccess dynamic_property_access("/signal_generator"_uri);
   float not_exits;
   ASSERT_ANY_THROW(dynamic_property_access.get("not_exists", not_exits));
@@ -93,11 +87,17 @@ TEST (TestSignalGenerator, SignalGeneratorComponentCheck)
   ASSERT_NEAR(amplitude, 10.0, 0.001);
   ASSERT_NEAR(frequency, 20.0, 0.001);
   ASSERT_EQ(cosine,true);
+
+  // Check the new output value to check if the amplitude is close to 10.0 (since now it is cosine => cos(~0)*10.0 ~= 10.0)
+  sig_sm.update();
+  ret = input_signal->receive(value_signal, 500ms);
+  ASSERT_EQ(ReceiveStatus::RECEIVE_OK, ret);
+  EXPECT_NEAR(value_signal->value, 10.0, 0.001);
 }
 
 TEST (TestSignalGenerator, DigitalConverterComponentCheck)
 {
-  /** Configuration */
+  // Configuration 
   auto digital_config  = "{"
                           "inputs: {"
                           "signals: {protocol: 'api'}},"
@@ -108,21 +108,21 @@ TEST (TestSignalGenerator, DigitalConverterComponentCheck)
                           "}";
   StateMachine dig_sm(std::make_shared<DigitalConverterComponent>("/digital_converter"_uri));
 
-  /** Fake outputs channels tests*/
-  auto outputSignal = std::make_shared<FakeOutput<Signal>>("outputSignal"_uri, "api");
-  ASSERT_TRUE(outputSignal->start());
+  // Fake outputs channels tests
+  auto output_signal = std::make_shared<FakeOutput<Signal>>("outputSignal"_uri, "api");
+  ASSERT_TRUE(output_signal->start());
 
   auto configuration = ComponentConfiguration(digital_config);
   auto endpoint = ConnectionConfiguration("{ signals: { endpoint: 'outputSignal' } }");
 
-  /** It checks all the connection procedure for the DigitalConverterComponent state machine */
+  // It checks all the connection procedure for the DigitalConverterComponent state machine 
   ASSERT_AND_RUN_STATE_MACHINE(dig_sm, configuration, endpoint);
 
-  /**Fake input channels tests*/
-  auto inputSignal = std::make_shared<FakeInput<Signal>>("inputSignal"_uri, "api", "/digital_converter/digital_signals");
-  ASSERT_TRUE(inputSignal->connect());
+  //Fake input channels tests
+  auto input_signal = std::make_shared<FakeInput<float>>("inputSignal"_uri, "api", "/digital_converter/digital_signals");
+  ASSERT_TRUE(input_signal->connect());
 
-  /** Dynamic properties  tests*/
+  // Dynamic properties  tests
   DynamicPropertyAccess dynamic_property_access("/digital_converter"_uri);
   float not_exits;
   ASSERT_ANY_THROW(dynamic_property_access.get("not_exists", not_exits));
@@ -130,7 +130,6 @@ TEST (TestSignalGenerator, DigitalConverterComponentCheck)
   ASSERT_TRUE(dynamic_property_access.set("amplitude", 10.0));
   ASSERT_TRUE(dynamic_property_access.set("threshold", 20.0));
 
-  
   double amplitude = 0, threshold = 0;
 
   ASSERT_TRUE(dynamic_property_access.get("amplitude", amplitude));
@@ -138,6 +137,26 @@ TEST (TestSignalGenerator, DigitalConverterComponentCheck)
 
   ASSERT_NEAR(amplitude, 10.0, 0.001);
   ASSERT_NEAR(threshold, 20.0, 0.001);
+
+  // Test digital_converter input/output signals
+  // Test for an input signal lower than threshold, which whould result a 0 output
+  Signal signal_value;
+  signal_value.timestamp = 1000;
+  signal_value.frame_id  = "Signal";
+  signal_value.value     = 5.0;
+  output_signal->sendAsync(signal_value);
+  dig_sm.update();
+  auto value = std::shared_ptr<const float>();
+  auto   ret = input_signal->receive(value, 500ms);
+  ASSERT_EQ(ReceiveStatus::RECEIVE_OK, ret);
+  EXPECT_NEAR(*value, 0., 0.001);
+  // Test for an input signal greater than threshold, which whould result with output of the same value than amplitude
+  signal_value.value = 25.0;
+  output_signal->sendAsync(signal_value);
+  dig_sm.update();
+  ret = input_signal->receive(value, 500ms);
+  ASSERT_EQ(ReceiveStatus::RECEIVE_OK, ret);
+  EXPECT_NEAR(*value, amplitude, 0.001);
 
 }
 

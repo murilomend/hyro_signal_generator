@@ -9,30 +9,29 @@
 
 #include "Thresholding.hpp"
 
-Thresholding::Thresholding()
-{
-
-}
-
-
-Thresholding::Thresholding(const double &amplitude,const double &threshold)
-{
-  setThreshold(amplitude,threshold);
-}
-
-
 Thresholding::~Thresholding()
 {
 }
-
-bool Thresholding::setThreshold(const double &amplitude,const double &threshold)
+bool Thresholding::setThreshold(const double thresh)
 {
-  this->m_amplitude = amplitude;
-  this->m_threshold = threshold;
+  this->m_thresh = thresh;
   return true;
 }
 
-double Thresholding::getSignalThreshold(const double &signal)
+double Thresholding::getThreshold()
 {
-  return signal > m_threshold ? m_amplitude : 0;
+  return this->m_thresh;
+}
+bool Thresholding::setAmplitude(const double amp)
+{
+  this->m_amp = amp;
+  return true;
+}
+double Thresholding::getAmplitude()
+{
+  return this->m_amp;
+}
+double Thresholding::getSignalThreshold(const double signal)
+{
+  return signal > m_thresh ? m_amp : 0;
 }

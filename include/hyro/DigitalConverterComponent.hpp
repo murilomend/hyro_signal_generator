@@ -7,16 +7,14 @@
 * 
 * @date 24/01/2019
 */
-
-
 #pragma once
-
 #ifndef SIGNAL_GENERATOR_DIGITALCONVERTERCOMPONENT_H
 #define SIGNAL_GENERATOR_DIGITALCONVERTERCOMPONENT_H
-
+/* Main includes */
 #include <signal_generator_components_export.h>
 #include "../../src/internal/Thresholding.hpp"
 #include <hyro/core/Component.h>
+/* Messages includes */
 #include <hyro/msgs/common/Basic.h>
 #include <hyro/msgs/Signal.hpp>
 
@@ -27,14 +25,7 @@ namespace hyro
 class SIGNAL_GENERATOR_COMPONENTS_EXPORT DigitalConverterComponent : public hyro::Component
 {
 public:
-
-  /**
-   * @brief Construct a new DigitalConverterComponent object
-   * 
-   * @param uri 
-   */
-  DigitalConverterComponent(URI uri);
-
+  using Component::Component;
 
   /**
    * @brief Destroy the DigitalConverterComponent object
@@ -58,25 +49,24 @@ public:
 
 private:
 
-  /*
+  /**
   * Methods related to Set and Get ot each registered dynamic property
   */ 
   ///@{
-  bool   setAmplitude(double amplitude);
+  bool   setAmplitude(double amp);
   double getAmplitude();
-  bool   setThreshold(double threshold);
+  bool   setThreshold(double thresh);
   double getThreshold();
   ///@}
-  
-  
+
   Thresholding  m_thresh;
-  double        m_amplitude;
-  double        m_threshold;
-  
-  static std::shared_ptr<hyro::HyroLogger>    s_logger;
   std::shared_ptr<hyro::ChannelInput<Signal>>  m_input;
   std::shared_ptr<hyro::ChannelOutput<float>>  m_output;
-  
+
+
+  /* Static Variables */ 
+  static std::shared_ptr<hyro::HyroLogger>     s_logger;
+
 };
 
 } // namespace hyro

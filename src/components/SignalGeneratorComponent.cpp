@@ -14,27 +14,24 @@ namespace hyro
 
 std::shared_ptr<hyro::HyroLogger> SignalGeneratorComponent::s_logger = hyro::HyroLoggerManager::CreateLogger("SignalGeneratorComponent");
 
-SignalGeneratorComponent::SignalGeneratorComponent (URI uri): hyro::Component(uri)
-{
-  /** Initialize object here */
-};
-
 hyro::Result SignalGeneratorComponent::init (const hyro::ComponentConfiguration & config)
 {
-  /** Dummy output for fixing the DynamicProperty bug for unit tests */
+  /* Dummy output for fixing the DynamicProperty bug for unit tests */
   std::shared_ptr<ChannelOutput<std::vector<int>>>
   m_dummy = this->registerOutput<std::vector<int>>("fix_dynamic"_uri, config);
 
-  /** Setting an output channel for sending the generated signal */
+  /* Setting an output channel for sending the generated signal */
   m_output = this->registerOutput<Signal>("signals"_uri, config);
-  m_signal_generator = SignalGenerator();
 
-  /** Setting the parameters from configuration */
-  m_amplitude = config.parameters.getParameter<double>("amplitude", 1.0);
-  m_frequency = config.parameters.getParameter<double>("frequency", 1.0);
-  m_cosine    = config.parameters.getParameter<bool>("cosine", false);
+  /* Setting the parameters from configuration */
+  double amp,freq;
+  bool   cosine;
+  amp     = config.parameters.getParameter<double>("amplitude", 1.0);
+  freq    = config.parameters.getParameter<double>("frequency", 1.0);
+  cosine  = config.parameters.getParameter<bool>("cosine", false);
+  m_signal_generator = SignalGenerator(amp,freq,cosine);
 
-  /** Registering the Dynamic properties */
+  /* Registering the Dynamic properties */
   registerDynamicProperty<double>(
     "amplitude",
     &SignalGeneratorComponent::setAmplitude,
@@ -51,63 +48,58 @@ hyro::Result SignalGeneratorComponent::init (const hyro::ComponentConfiguration 
     &SignalGeneratorComponent::getCosine,
     this);
 
-
-  m_signal_generator.setSignalGenerator(m_amplitude,m_frequency,m_cosine);
   return hyro::Result::RESULT_OK;
 }
 
 
-bool SignalGeneratorComponent::setAmplitude(double amplitude)
-{
-  m_amplitude = amplitude;
-  return m_signal_generator.setSignalGenerator(m_amplitude,m_frequency,m_cosine);
+bool SignalGeneratorComponent::setAmplitude(double amp)
+{ 
+  return m_signal_generator.setAmplitude(amp);
 }
 
 double SignalGeneratorComponent::getAmplitude()
 {
-  return this->m_amplitude;
+  return m_signal_generator.getAmplitude();
 }
 
-bool SignalGeneratorComponent::setFrequency(double frequency)
+bool SignalGeneratorComponent::setFrequency(double freq)
 {
-  m_frequency = frequency;
-  return m_signal_generator.setSignalGenerator(m_amplitude,m_frequency,m_cosine);
+  return m_signal_generator.setFrequency(freq);
 }
 
 double SignalGeneratorComponent::getFrequency()
 {
-  return this->m_frequency;
+  return m_signal_generator.getFrequency();
 }
 
 
 bool SignalGeneratorComponent::setCosine(bool cosine)
 {
-  m_cosine = cosine;
-  return m_signal_generator.setSignalGenerator(m_amplitude,m_frequency,m_cosine);
+  return m_signal_generator.setCosine(cosine);
 }
 
 bool SignalGeneratorComponent::getCosine()
 {
-  return this->m_cosine;
+  return m_signal_generator.getCosine();
 }
 
 
 hyro::Result SignalGeneratorComponent::reset ()
 {
-  /** Reset all variables and objects like the object was just created */
+  /* Reset all variables and objects like the object was just created */
   m_output.reset();
   return hyro::Result::RESULT_OK;
 }
 
 hyro::Result SignalGeneratorComponent::check ()
 {
-  /** Check everything is OK here */
+  /* Check everything is OK here */
   return hyro::Result::RESULT_OK;
 }
 
 hyro::Result SignalGeneratorComponent::start ()
 {
-  /** Start spinners and drivers (if any) here */
+  /* Start spinners and drivers (if any) here */
   return hyro::Result::RESULT_OK;
 }
 
@@ -117,7 +109,7 @@ hyro::Result SignalGeneratorComponent::update()
   value.timestamp = 1000;
   value.frame_id  = "Signal";
   value.value     = m_signal_generator.getSignalValue();
-  /** Send out the updated signal message to the output channel ('signals') */
+  /* Send out the updated signal message to the output channel ('signals') */
   m_output->sendAsync(value);
   return hyro::Result::RESULT_OK;
 }

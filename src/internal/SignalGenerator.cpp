@@ -10,43 +10,47 @@
 #include "SignalGenerator.hpp"
 
 
-SignalGenerator::SignalGenerator()
-{
-  /** These are the default values for starting the class */
-  setSignalGenerator(1,1,true);
-  m_deg  = 0.;
-}
-
 SignalGenerator::~SignalGenerator()
 {
 
 }
 
-SignalGenerator::SignalGenerator(const double &amp,const double &freq,const bool &cosine)
+bool SignalGenerator::setAmplitude(const double amp)
 {
-  setSignalGenerator(amp,freq,cosine);
-  m_deg  = 0.;
-}
-
-bool SignalGenerator::setSignalGenerator(const double &m_amp,const double &freq,const bool &cosine)
-{
-  /** The frequency value (freq) is used to set the variable m_step, which is multiplied by 0.360 to convert */
-  /** freq to hertz, considering an update rate of 1 ms. */
-  this->m_amp    = m_amp;
-  this->m_freq   = freq;
-  this->m_step   = freq*0.360;
-  this->m_cosine = cosine;
-
+  this->m_amp    = amp;
   return true;
 }
+double SignalGenerator::getAmplitude()
+{
+  return this->m_amp;
+}
 
+bool SignalGenerator::setFrequency(const double freq)
+{
+  this->m_freq    = freq;
+  return true;
+}
+double SignalGenerator::getFrequency()
+{
+  return this->m_freq;
+}
 
+bool SignalGenerator::setCosine(const bool cosine)
+{
+  this->m_cosine    = cosine;
+  return true;
+}
+bool SignalGenerator::getCosine()
+{
+  return this->m_cosine;
+}
 
 double SignalGenerator::getSignalValue()
 {
-  /** Basically this function updates the siusoidal wave by a m_step eachp time. */
+  /* Basically this function updates the sinusoidal wave by a m_freq*0.360 each time.
+     The 0.360 converts m_freq to hertz, considering an update rate of 1 ms. */
   double rad = m_deg / 180.0 * M_PI;
-  m_deg += m_step;
+  m_deg += m_freq*0.360;
   return m_cosine?(m_amp * cos(rad)):(m_amp * sin(rad));
 }
 

@@ -7,9 +7,6 @@
 * 
 * @date 24/01/2019
 */
-
-
-#include <hyro/common/Time.h>
 #include <hyro/core/StateMachine.h>
 #include <hyro/utils/StateMachineSpinner.h>
 #include <hyro/widgets/WidgetCollection.h>
@@ -28,17 +25,16 @@ int main ()
   hyro::LogConfig config;
   config.level = hyro::LogLevel::CRITICAL;
   hyro::HyroLoggerManager::Configure(config);
-  /**
+  /*
    * STEP 1: Component instantiation
    * Define the state machine for both Signal amd Digital Components
    */
   StateMachine sig_sm(std::make_shared<SignalGeneratorComponent>("/signal_generator"_uri));
   StateMachine dig_sm(std::make_shared<DigitalConverterComponent>("/digital_converter"_uri));
 
-  /**
+  /*
    * STEP 2: Components configuration
    */
-
   ComponentConfiguration signal_config  =    ComponentConfiguration("{"
                                                                       "parameters: {amplitude: 0.5, frequency: 0.5, cosine: true},"
                                                                       "outputs: {"
@@ -56,22 +52,21 @@ int main ()
                                                                       "}"
                                                                       "}");
         
-  /** 
+  /*
    * Ports Connection Configuration
    * Connection map
    */
   auto dig_connections = ConnectionConfiguration(
     "{ signals: {endpoint: '/signal_generator/signals' }}");
-
   
-  /** 
+  /*
    * STEP 3: Init the SMs
    * Init Components State Machines
    */
   sig_sm.init(signal_config);
   dig_sm.init(digital_config);
   
-  /** 
+  /*
    * STEP 4: Start the SMs
    * Start Components State Machines
    */
@@ -79,15 +74,15 @@ int main ()
   dig_sm.start();
 
 
-  /**
+  /*
    * STEP 5: Connections
    * Connect ports between different componets
    */
   sig_sm.connect();
   dig_sm.connect(dig_connections);
   
-  /**
-   * STEP 6: Check Everything
+  /*
+   * STEP 6: Check and update Everything
    */
   sig_sm.check();
   dig_sm.check();
@@ -95,7 +90,7 @@ int main ()
   sig_sm.update();
   dig_sm.update();
 
-  /**
+  /*
    * STEP 7: Run Everything
    */
   CancellationTokenSource cancellation_token;
@@ -103,73 +98,73 @@ int main ()
   StateMachineSpinner sig_spinner(sig_sm, cancellation_token, 1ms);
   StateMachineSpinner dig_spinner(dig_sm, cancellation_token, 1ms);
   
-  /** A thread is created for running only the widgets in a separated context while the following part can be run */
-  std::thread plot_thread([]()
-  {
-    widgets::registerChannelListener<hyro::Signal>("/signal_generator/signals", "api", [](Signal signal_msg)
-    {
-      widgets::plot2d<float>("Signal", "/signal_generator/signals/value", signal_msg.value);
-    });
-    widgets::plot2d<float>("Signal", "/digital_converter/digital_signals", widgets::Plot2dSettings::initWithProtocol("api"));
-    widgets::exec();
-  });
 
   std::this_thread::sleep_for(1s);
-  /** Dynamic properties Access */
-  DynamicPropertyAccess dynamic_property_access_sig("/signal_generator"_uri);
-  DynamicPropertyAccess dynamic_property_access_dig("/digital_converter"_uri);
 
-  /** This loop is done for getting the user's input to dynamically check the parameters functionalities */
-  char ch;
-  do
+  /* This thread is done for getting the user's input while it can be plotted */
+  std::thread input_thread([]()
   {
-    double  amplitude_sig = 0,frequency = 0;
-    double  amplitude_dig = 0,threshold = 0;
-    bool    cosine = false;
+    /* Dynamic properties Access */
+    DynamicPropertyAccess dynamic_property_access_sig("/signal_generator"_uri);
+    DynamicPropertyAccess dynamic_property_access_dig("/digital_converter"_uri);
+    char ch;
+    do
+    {
+      double  amplitude_sig = 0,frequency = 0;
+      double  amplitude_dig = 0,threshold = 0;
+      bool    cosine = false;
 
-    std::cout << "Set Signal Properties" << std::endl;
+      std::cout << "Set Signal Properties" << std::endl;
 
-    /** Read parameters values */
-    dynamic_property_access_sig.get<double>("amplitude", amplitude_sig);
-    dynamic_property_access_sig.get<double>("frequency", frequency);
-    dynamic_property_access_sig.get<bool>("cosine", cosine);
-    dynamic_property_access_dig.get<double>("amplitude",amplitude_dig);
-    dynamic_property_access_dig.get<double>("threshold",threshold);
-    std::cout << "Current parameters" <<  std::endl;
-    std::cout << "SIGNAL GENERATOR  : Amplitude: " << amplitude_sig << ", Frequency: " << frequency << ", Cosine: " << cosine << std::endl;
-    std::cout << "DIGITAl_CONVERTER : Amplitude: " << amplitude_dig << ", Threshold: " << threshold << std::endl;
+      /* Read parameters values */
+      dynamic_property_access_sig.get<double>("amplitude", amplitude_sig);
+      dynamic_property_access_sig.get<double>("frequency", frequency);
+      dynamic_property_access_sig.get<bool>("cosine", cosine);
+      dynamic_property_access_dig.get<double>("amplitude",amplitude_dig);
+      dynamic_property_access_dig.get<double>("threshold",threshold);
+      std::cout << "Current parameters" <<  std::endl;
+      std::cout << "SIGNAL GENERATOR  : Amplitude: " << amplitude_sig << ", Frequency: " << frequency << ", Cosine: " << cosine << std::endl;
+      std::cout << "DIGITAl_CONVERTER : Amplitude: " << amplitude_dig << ", Threshold: " << threshold << std::endl;
 
-    /** Get user inputs */
-    std::cout << "Please inform the Signal Amplitude(Double): ";
-    std::cin >> amplitude_sig;
-    std::cout << "Please inform the Signal Frequency[Hz](Double): ";
-    std::cin >> frequency;
-    std::cout << "Please inform cosine (Int): 1 for Cosine, 0 to Sine: ";
-    std::cin >> cosine;
-    std::cout << "Please inform the Converter Amplitude(Double): ";
-    std::cin >> amplitude_dig;
-    std::cout << "Please inform the Converter Threshlod(Double): ";
-    std::cin >> threshold;
+      /* Get user inputs */
+      std::cout << "Please inform the Signal Amplitude(Double): ";
+      std::cin >> amplitude_sig;
+      std::cout << "Please inform the Signal Frequency[Hz](Double): ";
+      std::cin >> frequency;
+      std::cout << "Please inform cosine (Int): 1 for Cosine, 0 to Sine: ";
+      std::cin >> cosine;
+      std::cout << "Please inform the Converter Amplitude(Double): ";
+      std::cin >> amplitude_dig;
+      std::cout << "Please inform the Converter Threshlod(Double): ";
+      std::cin >> threshold;
 
-    /** Assign parameters values */
-    dynamic_property_access_sig.set<double>("amplitude", amplitude_sig);
-    dynamic_property_access_sig.set<double>("frequency", frequency);
-    dynamic_property_access_sig.set<bool>("cosine", cosine);
-    dynamic_property_access_dig.set<double>("amplitude", amplitude_dig);
-    dynamic_property_access_dig.set<double>("threshold", threshold);
+      /* Assign parameters values */
+      dynamic_property_access_sig.set<double>("amplitude", amplitude_sig);
+      dynamic_property_access_sig.set<double>("frequency", frequency);
+      dynamic_property_access_sig.set<bool>("cosine", cosine);
+      dynamic_property_access_dig.set<double>("amplitude", amplitude_dig);
+      dynamic_property_access_dig.set<double>("threshold", threshold);
 
-    std::cout << "Continue (Y/n): ";
-    std::cin >> ch;
+      std::cout << "Continue (Y/n): ";
+      std::cin >> ch;
 
-  }while (ch != 'n' && ch != 'N');
-  
+    }while (ch != 'n' && ch != 'N');
+  });
+
+  /* Widget plot of the results */
+  widgets::registerChannelListener<hyro::Signal>("/signal_generator/signals", "api", [](Signal signal_msg)
+  {
+    widgets::plot2d<float>("Signal", "/signal_generator/signals/value", signal_msg.value);
+  });
+  widgets::plot2d<float>("Signal", "/digital_converter/digital_signals", widgets::Plot2dSettings::initWithProtocol("api"));
+  widgets::exec();
 
 
   std::this_thread::sleep_for(2s);
-  /** This call will signal every spinner's thread */
+  /* This call will signal every spinner's thread */
   cancellation_token.cancel();
-  /** Wait for the components to stop any update() execution */
-  plot_thread.join();
+  /* Wait for the components to stop any update() execution */
+  input_thread.join();
   sig_spinner.wait();
   dig_spinner.wait();
   

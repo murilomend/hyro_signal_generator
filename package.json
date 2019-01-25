@@ -6,8 +6,8 @@
 	"description": "Signal generator for learning basic Hyro concepts",
 
 	"dependencies": {
-		"hyro_api_channel": "*",
 		"hyro_utils": "*",
-		"hyro_msgs": "*"
+		"hyro_msgs": "*",
+		"hyro_widgets": "*"
 	}
 }
