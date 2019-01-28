@@ -17,32 +17,32 @@ SignalGenerator::~SignalGenerator()
 
 bool SignalGenerator::setAmplitude(const double amp)
 {
-  this->m_amp    = amp;
+  m_amp = amp;
   return true;
 }
 double SignalGenerator::getAmplitude()
 {
-  return this->m_amp;
+  return m_amp;
 }
 
 bool SignalGenerator::setFrequency(const double freq)
 {
-  this->m_freq    = freq;
+  m_freq = freq;
   return true;
 }
 double SignalGenerator::getFrequency()
 {
-  return this->m_freq;
+  return m_freq;
 }
 
 bool SignalGenerator::setCosine(const bool cosine)
 {
-  this->m_cosine    = cosine;
+  m_cosine = cosine;
   return true;
 }
 bool SignalGenerator::getCosine()
 {
-  return this->m_cosine;
+  return m_cosine;
 }
 
 double SignalGenerator::getSignalValue()
