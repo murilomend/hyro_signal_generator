@@ -14,22 +14,22 @@ Thresholding::~Thresholding()
 }
 bool Thresholding::setThreshold(const double thresh)
 {
-  this->m_thresh = thresh;
+  m_thresh = thresh;
   return true;
 }
 
 double Thresholding::getThreshold()
 {
-  return this->m_thresh;
+  return m_thresh;
 }
 bool Thresholding::setAmplitude(const double amp)
 {
-  this->m_amp = amp;
+  m_amp = amp;
   return true;
 }
 double Thresholding::getAmplitude()
 {
-  return this->m_amp;
+  return m_amp;
 }
 double Thresholding::getSignalThreshold(const double signal)
 {
