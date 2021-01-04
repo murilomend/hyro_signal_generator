@@ -106,7 +106,7 @@ hyro::Result SignalGeneratorComponent::start ()
 hyro::Result SignalGeneratorComponent::update()
 {
   Signal value;
-  value.timestamp = 1000;
+  value.timestamp = std::chrono::duration_cast<std::chrono::seconds>(hyro::TimeUtils::Now_TimeSinceEpoch()).count();
   value.frame_id  = "Signal";
   value.value     = m_signal_generator.getSignalValue();
   /* Send out the updated signal message to the output channel ('signals') */
